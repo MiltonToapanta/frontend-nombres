@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Guardar Nombres</title>
+</head>
+<body>
+  <h1>App de Nombres</h1>
+  <input type="text" id="nombre" placeholder="Ingresa un nombre" />
+  <button onclick="guardarNombre()">Guardar</button>
+  <ul id="listaNombres"></ul>
+
+  <script>
+    async function guardarNombre() {
+      const nombre = document.getElementById("nombre").value;
+      await fetch("http://backend:3000/nombres", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre }),
+      });
+      document.getElementById("nombre").value = "";
+      listarNombres();
+    }
+
+    async function listarNombres() {
+      const res = await fetch("http://backend:3000/nombres");
+      const data = await res.json();
+      const lista = document.getElementById("listaNombres");
+      lista.innerHTML = "";
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item.nombre;
+        lista.appendChild(li);
+      });
+    }
+
+    listarNombres();
+  </script>
+</body>
+</html>
