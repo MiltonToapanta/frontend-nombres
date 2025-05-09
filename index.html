@@ -2,36 +2,116 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Guardar Nombres</title>
+  <title>ingresew su nombre</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin-top: 30px;
+    }
+
+    li {
+      background-color: white;
+      margin: 5px auto;
+      padding: 10px;
+      width: 300px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-  <h1>App de Nombres</h1>
+  <h1>INGRESE TU NOMBRE </h1>
   <input type="text" id="nombre" placeholder="Ingresa un nombre" />
-  <button onclick="guardarNombre()">Guardar</button>
+  <button id="guardarBtn">Guardar</button>
+  <p id="error" style="color: red; display: none;">Por favor, ingresa un nombre válido.</p>
+
   <ul id="listaNombres"></ul>
 
   <script>
+    document.getElementById("guardarBtn").addEventListener("click", guardarNombre);
+
     async function guardarNombre() {
-      const nombre = document.getElementById("nombre").value;
-      await fetch("http://backend:3000/nombres", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre }),
-      });
-      document.getElementById("nombre").value = "";
-      listarNombres();
+      const nombre = document.getElementById("nombre").value.trim();
+      const error = document.getElementById("error");
+
+      if (!nombre) {
+        error.style.display = "block";
+        return;
+      }
+      error.style.display = "none";
+
+      try {
+        const response = await fetch("http://localhost:3000/nombres", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al guardar el nombre");
+        }
+
+        document.getElementById("nombre").value = "";
+        listarNombres();
+      } catch (err) {
+        console.error("Error al guardar nombre:", err);
+      }
     }
 
     async function listarNombres() {
-      const res = await fetch("http://backend:3000/nombres");
-      const data = await res.json();
-      const lista = document.getElementById("listaNombres");
-      lista.innerHTML = "";
-      data.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item.nombre;
-        lista.appendChild(li);
-      });
+      try {
+        const res = await fetch("http://localhost:3000/nombres");
+        if (!res.ok) {
+          throw new Error("Error al obtener la lista de nombres");
+        }
+
+        const data = await res.json();
+        const lista = document.getElementById("listaNombres");
+        lista.innerHTML = "";
+
+        data.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item.nombre;
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Error al listar nombres:", err);
+      }
     }
 
     listarNombres();
